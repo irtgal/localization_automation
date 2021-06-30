@@ -1,7 +1,10 @@
 from File import *
+import os
+import re
 
-
-files = ["sample.vue"]
-for f in files:
-    file = File(".", "acount_show.vue")
-    file.do_work()
+folder = r"C:\Users\Student\Desktop\Nucleus\manager\src\modules\Epgs"
+for f in os.listdir(folder):
+    if f.endswith("vue") or f.endswith("txt"):
+        file = File(folder, f)
+        file.generate_translated_file()
+        file.write_file()
