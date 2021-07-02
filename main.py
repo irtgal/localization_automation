@@ -1,15 +1,8 @@
-from File import *
 import os
 import re
 import ntpath
 
-folder = r"C:\Users\Student\Desktop\Nucleus\manager\src\modules\Epgs"
-for f in os.listdir(folder):
-    if f.endswith("vue") or f.endswith("txt"):
-        file = File(folder, f)
-        file.generate_translated_file()
-        file.write_file()
-        
+
 class File:
     def __init__(self, path, file_name):
         self.name = file_name
@@ -27,7 +20,7 @@ class File:
             lines = file.readlines()
             self.lines = "".join(lines)
         else:
-            raise Exception(f"Couldn`t find {self.path}/{self.name}")
+            self.raise_warning(f"Couldn`t find file ")
     
     def write_file(self):
         full_path = f"{self.path}/{self.name}"
@@ -37,10 +30,10 @@ class File:
 
         
     def raise_warning(self, message):
-        print(f'WARNING: "{message}" in {self.path}/{self.name}')
+        print(f'WARNING: "{message}" - {self.path}/{self.name}')
 
     def find_dirty_text(self):
-        pattern = re.compile(r"\>[\w|\s|!?.,-/:_;&\\]+\<")
+        pattern = re.compile(r"\>[\w|\s|!?.,-/:_;&\\\`\']+\<")
         result = re.findall(pattern, self.lines)
         text = [el for el in result if el[1:-1].strip() != '']
         return text
@@ -73,3 +66,13 @@ def form_translation(clean_str):
     clean_str = re.sub(r"[\s]+", " ", clean_str)
     str_lower =clean_str.replace(" ", "-").lower()
     return f'{{{{translate("{str_lower}","{clean_str}")}}}}'
+
+
+
+# --MAIN--
+folder = r"C:\Users\Student\Desktop\Nucleus\manager\src\modules\Customers"
+for f in os.listdir(folder):
+    if f.endswith("vue") or f.endswith("html"):
+        file = File(folder, f)
+        file.generate_translated_file()
+        file.write_file()
