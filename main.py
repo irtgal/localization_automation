@@ -2,6 +2,7 @@ import os
 import re
 import ntpath
 
+warning_count = 0
 
 class File:
     def __init__(self, path, file_name):
@@ -20,7 +21,7 @@ class File:
             lines = file.readlines()
             self.lines = "".join(lines)
         else:
-            self.raise_warning(f"Couldn`t find file ")
+            self.raise_warning(f"Couldn`t find file")
     
     def write_file(self):
         full_path = f"{self.path}/{self.name}"
@@ -30,10 +31,13 @@ class File:
 
         
     def raise_warning(self, message):
-        print(f'WARNING: "{message}" - {self.path}/{self.name}')
+        global warning_count
+        warning_count += 1
+        nice_path = self.path.replace("\\", "/")
+        print(f'{warning_count}. WARNING: {nice_path}/{self.name} ->\n"{message}"\n')
 
     def find_dirty_text(self):
-        pattern = re.compile(r"\>[\w|\s|!?.,-/:_;&\\\`\']+\<")
+        pattern = re.compile(r"\>[\w|\s|!?.,-/:_;&\\\`\'{}]+\<")
         result = re.findall(pattern, self.lines)
         text = [el for el in result if el[1:-1].strip() != '']
         return text
@@ -50,9 +54,10 @@ class File:
         dirty_text = self.find_dirty_text()
         for dirty_str in dirty_text:
             clean_str = extract_text(self, dirty_str)
-            translated_str = form_translation(clean_str)
-            whitespaces = dirty_str.split(clean_str)
-            self.translations[dirty_str] = whitespaces[0]+translated_str+whitespaces[1]     
+            if clean_str:
+                translated_str = form_translation(clean_str)
+                whitespaces = dirty_str.split(clean_str)
+                self.translations[dirty_str] = whitespaces[0]+translated_str+whitespaces[1]     
         self.replace_translations()
 
 
@@ -60,6 +65,13 @@ class File:
 def extract_text(file, dirty_str):
     if re.search(r"&[\w]+;", dirty_str):
         file.raise_warning(dirty_str)
+        return None
+    elif "{" in dirty_str:
+        if re.sub(r"\{\{.*?\}\}", "", dirty_str[1:-1]).strip() != "": 
+            file.raise_warning(dirty_str)
+        return None
+    elif not re.search(r"[A-Za-z]+", dirty_str[1:-1].strip()):
+        return None
     return dirty_str[1:-1].strip()
     
 def form_translation(clean_str):
@@ -70,9 +82,10 @@ def form_translation(clean_str):
 
 
 # --MAIN--
-folder = r"C:\Users\Student\Desktop\Nucleus\manager\src\modules\Customers"
-for f in os.listdir(folder):
-    if f.endswith("vue") or f.endswith("html"):
-        file = File(folder, f)
-        file.generate_translated_file()
-        file.write_file()
+base_dir = r"C:\Users\Student\Desktop\Nucleus\manager\src"
+for root, dirs, files in os.walk(base_dir):
+    for filename in files:
+        if filename.endswith("vue") or filename.endswith("html"):
+            file = File(root, filename)
+            file.generate_translated_file()
+            file.write_file()
