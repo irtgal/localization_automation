@@ -22,12 +22,6 @@ class File:
             self.lines = "".join(lines)
         else:
             self.raise_warning(f"Couldn`t find file")
-    
-    def write_file(self):
-        full_path = f"{self.path}/{self.name}"
-        actual_file = open(full_path, "w", encoding="utf-8")
-        actual_file.write(self.new_lines)
-        actual_file.close()
 
     def raise_warning(self, message):
         global warning_count
@@ -47,12 +41,16 @@ def generate_array(translations_dict):
     print(len(translations_dict.items()))
     result = ""
     for x,(key, value) in enumerate(translations_dict.items()):
-        line = f"{x}  ['language_id'=> $language_id, 'key' => '{key}', 'value' => '{value}']"
-        print(x, result.count("\n"), line)
+        line = f"['language_id'=> $language_id, 'key' => '{key}', 'value' => '{value}']"
         result += line + "\n"
     return result
         
 
+    
+def write_file(path, lines):
+    actual_file = open(path, "w", encoding="utf-8")
+    actual_file.write(lines)
+    actual_file.close()
 
 
 
@@ -74,6 +72,6 @@ for root, dirs, files in os.walk(base_dir):
             translations_dict.update(file_translations)
 
             #file.write_file()
-print(len(translations_dict))
-banana = generate_array(translations_dict)
-print(banana.count("\n"))
+result = generate_array(translations_dict)
+write_file("seeder", result)
+
