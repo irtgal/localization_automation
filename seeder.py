@@ -1,6 +1,7 @@
 import os
 import re
 import ntpath
+import sys
 
 warning_count = 0
 
@@ -38,7 +39,7 @@ class File:
         return self.translations
     
 def generate_array(translations_dict):
-    print(len(translations_dict.items()))
+    print(f"Generated {len(translations_dict.items())} seeds inside seeds.txt file")
     result = ""
     for x,(key, value) in enumerate(translations_dict.items()):
         line = f"['language_id'=> $language_id, 'key' => '{key}', 'value' => '{value}']"
@@ -53,25 +54,31 @@ def write_file(path, lines):
     actual_file.close()
 
 
+ 
+
+def main(base_dir):
+    translations_dict = {}
+    for root, dirs, files in os.walk(base_dir):
+        for filename in files:
+            if filename.endswith("vue") or filename.endswith("html"):
+                file = File(root, filename)
+                file_translations = file.find_translations()
+                translations_dict.update(file_translations)
+
+                #file.write_file()
+    result = generate_array(translations_dict)
+    write_file("seeds", result)
 
 
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("ERROR: Specify the path to the project!")
+        quit()
 
-    
-    
+    base_dir = sys.argv[1]
+    if not os.path.exists(base_dir):
+        print("ERROR: Specified path doesn`t exist!")
+        quit()
 
-
-
-# --MAIN--
-base_dir = r"C:\Users\Student\Desktop\Nucleus\manager\src"
-translations_dict = {}
-for root, dirs, files in os.walk(base_dir):
-    for filename in files:
-        if filename.endswith("vue") or filename.endswith("html"):
-            file = File(root, filename)
-            file_translations = file.find_translations()
-            translations_dict.update(file_translations)
-
-            #file.write_file()
-result = generate_array(translations_dict)
-write_file("seeder", result)
+    main(base_dir)
 
