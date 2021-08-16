@@ -1,6 +1,7 @@
 import os
 import re
 import ntpath
+import sys
 
 warning_count = 0
 
@@ -37,7 +38,7 @@ class File:
         print(f'{warning_count}. WARNING: {nice_path}/{self.name} ->\n"{message}"\n')
 
     def find_dirty_text(self):
-        pattern = re.compile(r"\>[\w|\s|!?.,-/:_;&\\\`\'{}]+\<")
+        pattern = re.compile(r"\>[\w|\s|!?.,-/:_;&\\\`\'()]+\<")
         result = re.findall(pattern, self.lines)
         text = [el for el in result if el[1:-1].strip() != '']
         return text
@@ -63,14 +64,20 @@ class File:
 
     
 def extract_text(file, dirty_str):
+    plain_text = re.search(r"[A-Za-z]+", dirty_str[1:-1].strip())
+    #dont translate $nbsp;  
     if re.search(r"&[\w]+;", dirty_str):
         file.raise_warning(dirty_str)
         return None
+
+    #dont translate variables
     elif "{" in dirty_str:
         if re.sub(r"\{\{.*?\}\}", "", dirty_str[1:-1]).strip() != "": 
             file.raise_warning(dirty_str)
         return None
-    elif not re.search(r"[A-Za-z]+", dirty_str[1:-1].strip()):
+
+    #dont translate text shroter than 2 cahracters
+    elif not plain_text or len(plain_text.group(0)) < 2:
         return None
     return dirty_str[1:-1].strip()
     
@@ -82,10 +89,28 @@ def form_translation(clean_str):
 
 
 # --MAIN--
-base_dir = r"C:\Users\Student\Desktop\Nucleus\manager\src"
-for root, dirs, files in os.walk(base_dir):
-    for filename in files:
-        if filename.endswith("vue") or filename.endswith("html"):
-            file = File(root, filename)
-            file.generate_translated_file()
-            file.write_file()
+
+
+def main(base_dir):
+    for root, dirs, files in os.walk(base_dir):
+        for filename in files:
+            if filename.endswith("vue") or filename.endswith("html"):
+                file = File(root, filename)
+                file.generate_translated_file()
+                file.write_file()
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("ERROR: Specify the path to the project!")
+        quit()
+
+    base_dir = sys.argv[1]
+    if not os.path.exists(base_dir):
+        print("ERROR: Specified path doesn`t exist!")
+        quit()
+
+    main(base_dir)
+
+
+
+        
