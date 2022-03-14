@@ -72,6 +72,8 @@ def extract_text(file, dirty_str):
         return None
     elif not re.search(r"[A-Za-z]+", dirty_str[1:-1].strip()):
         return None
+    elif dirty_str[1:-1].strip() == 'x':
+        return None
     return dirty_str[1:-1].strip()
     
 def form_translation(clean_str):
@@ -80,9 +82,10 @@ def form_translation(clean_str):
     return f'{{{{translate("{str_lower}","{clean_str}")}}}}'
 
 
+print('Starting script')
 
 # --MAIN--
-base_dir = r"C:\Users\Student\Desktop\Nucleus\manager\src"
+base_dir = r"C:\Users\Gal\Desktop\Guestflow\client-stb\src\default"
 for root, dirs, files in os.walk(base_dir):
     for filename in files:
         if filename.endswith("vue") or filename.endswith("html"):

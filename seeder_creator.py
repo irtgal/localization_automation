@@ -1,6 +1,8 @@
 import os
 import re
 import ntpath
+import pathlib
+
 
 warning_count = 0
 
@@ -47,24 +49,23 @@ def generate_array(translations_dict):
     print(len(translations_dict.items()))
     result = ""
     for x,(key, value) in enumerate(translations_dict.items()):
-        line = f"{x}  ['language_id'=> $language_id, 'key' => '{key}', 'value' => '{value}']"
-        print(x, result.count("\n"), line)
+        line = f"[\"language_id\"=> $language_id, \"key\" => \"{key}\", \"value\" => \"{value}\"],"
+        print(result.count("\n"), line)
         result += line + "\n"
     return result
         
 
 
 
-
-
-
-    
-    
-
+def write_file(translations_dict):
+    full_path = f"{pathlib.Path().resolve()}/seeds.txt"
+    actual_file = open(full_path, "w", encoding="utf-8")
+    actual_file.write(translations_dict)
+    actual_file.close()
 
 
 # --MAIN--
-base_dir = r"C:\Users\Student\Desktop\Nucleus\manager\src"
+base_dir = r"C:\Users\Gal\Desktop\Nucleus\client-stb\src\default"
 translations_dict = {}
 for root, dirs, files in os.walk(base_dir):
     for filename in files:
@@ -75,5 +76,5 @@ for root, dirs, files in os.walk(base_dir):
 
             #file.write_file()
 print(len(translations_dict))
-banana = generate_array(translations_dict)
-print(banana.count("\n"))
+write_file(generate_array(translations_dict))
+print('File generated inside: ' + f"{pathlib.Path().resolve()}/seeds.txt")
